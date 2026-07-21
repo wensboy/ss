@@ -1,0 +1,12 @@
+.claude/
+.codex/
+.copilot/
+.vscode/
+spec/
+/docs/
+
+*.sh
+*.md
+
+!readme.md
+!README.md
