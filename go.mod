@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/joho/godotenv v1.5.1
+	github.com/labstack/echo/v5 v5.3.1
 	github.com/spf13/cast v1.10.0
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v3 v3.8.0
