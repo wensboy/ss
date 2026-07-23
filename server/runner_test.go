@@ -27,3 +27,18 @@ func Test_Runner(t *testing.T) {
 	runner := NewRunner().SetExitDelay(500 * time.Millisecond).SetServer(ms)
 	runner.Run() // block here! ctrl + c to exit...
 }
+
+func Test_Runner_RestServer(t *testing.T) {
+	s := NewRestServer()
+	s.MountModules(
+		s.MountDatabases(nil, func(s *RestServer) {
+			fmt.Println("mount databases")
+		}, nil),
+		s.MountConfig(nil, func(s *RestServer) {
+			fmt.Println("mount config")
+			s.server.Addr = ":18080"
+		}, nil),
+	)
+	runner := NewRunner().SetExitDelay(500 * time.Millisecond).SetServer(s)
+	runner.Run() // block here! ctrl + c to exit...
+}
