@@ -36,6 +36,16 @@ var (
 	_global_config *Config
 )
 
+func GConfigSource(path ...string) Source {
+	return ConfigSource(_global_config, path...)
+}
+
+func ConfigSource(cfg *Config, path ...string) Source {
+	return func() (any, bool) {
+		return cfg.Lookup(path...)
+	}
+}
+
 // key be like "restful.server.port"
 func ConfigVar(key string) cli.ValueSource {
 	return &ConfigValueSource{key: key}

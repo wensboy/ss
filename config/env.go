@@ -22,6 +22,16 @@ var (
 	_default_env_separator = "_"
 )
 
+func GEnvSource(path ...string) Source {
+	return EnvSource(_global_env, path...)
+}
+
+func EnvSource(env *Env, path ...string) Source {
+	return func() (any, bool) {
+		return env.Lookup(path...)
+	}
+}
+
 func AppendEnvGroup(eg EnvGroup) {
 	_global_env.AppendGroup(eg)
 }
