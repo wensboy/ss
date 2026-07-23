@@ -13,10 +13,14 @@ type Err struct {
 }
 
 func (e Err) Error() string {
-	if e.err == nil {
-		return fmt.Sprintf("[%s#%d] %s", e.Errno, e.Code, e.Msg)
+	str := fmt.Sprintf("[%s#%d] %s", e.Errno, e.Code, e.Msg)
+	if e.Errno == "" {
+		str = fmt.Sprintf("[%d] %s", e.Code, e.Msg)
 	}
-	return fmt.Sprintf("[%s#%d] %s -> %s", e.Errno, e.Code, e.Msg, e.err.Error())
+	if e.err == nil {
+		return str
+	}
+	return fmt.Sprintf("%s -> %s", str, e.err.Error())
 }
 
 func (e Err) Wrap(err error) Err {
