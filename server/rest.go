@@ -17,6 +17,14 @@ type RestServer struct {
 	routers map[string]*echo.Group // 仅仅用于 root router 级别中间件控制, 不适用于 sub router 记录
 }
 
+func NewRestServer() *RestServer {
+	return &RestServer{
+		muxer:   echo.New(),
+		server:  &http.Server{},
+		routers: make(map[string]*echo.Group),
+	}
+}
+
 type RestServerOption func(*RestServer)
 type RestServerHook = RestServerOption
 
@@ -54,7 +62,7 @@ func (s *RestServer) SetServer(server *http.Server) *RestServer {
 	return s
 }
 
-func (s *RestServer) MountModules(opts ...RestServerOption) {
+func (s *RestServer) MountModules(opts ...RestServerHook) {
 	for _, opt := range opts {
 		opt(s)
 	}
@@ -128,12 +136,4 @@ func (s *RestServer) MountConfig(preHook, runHook, postHook RestServerHook) Rest
 
 func (s *RestServer) mountConfig() {
 	// todo: 默认挂载配置逻辑
-}
-
-func NewRestServer() *RestServer {
-	return &RestServer{
-		muxer:   echo.New(),
-		server:  &http.Server{},
-		routers: make(map[string]*echo.Group),
-	}
 }

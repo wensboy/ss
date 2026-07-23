@@ -5,11 +5,23 @@ import (
 	"fmt"
 )
 
+func Tracing(err error, target error) bool {
+	return errors.Is(err, target)
+}
+
 type Err struct {
 	Errno string `json:"errno,omitempty"`
 	Code  int    `json:"code"`
 	Msg   string `json:"msg"`
 	err   error  `json:"-"`
+}
+
+func NewErr(errno string, code int, template string, args ...any) Err {
+	return Err{
+		Errno: errno,
+		Code:  code,
+		Msg:   fmt.Sprintf(template, args...),
+	}
 }
 
 func (e Err) Error() string {
@@ -34,16 +46,4 @@ func (e Err) Wrap(err error) Err {
 
 func (e Err) Unwrap() error {
 	return e.err
-}
-
-func NewErr(errno string, code int, template string, args ...any) Err {
-	return Err{
-		Errno: errno,
-		Code:  code,
-		Msg:   fmt.Sprintf(template, args...),
-	}
-}
-
-func Tracing(err error, target error) bool {
-	return errors.Is(err, target)
 }

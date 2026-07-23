@@ -36,6 +36,19 @@ var (
 	_global_config *Config
 )
 
+// key be like "restful.server.port"
+func ConfigVar(key string) cli.ValueSource {
+	return &ConfigValueSource{key: key}
+}
+
+func ConfigVars(keys ...string) cli.ValueSourceChain {
+	vsc := []cli.ValueSource{}
+	for _, key := range keys {
+		vsc = append(vsc, ConfigVar(key))
+	}
+	return cli.NewValueSourceChain(vsc...)
+}
+
 type SpecConfig map[string]any
 
 func (sc SpecConfig) Lookup(path ...string) (any, bool) {
@@ -170,17 +183,4 @@ func (cvs *ConfigValueSource) Lookup() (string, bool) {
 		return s, true
 	}
 	return "", false
-}
-
-// key be like "restful.server.port"
-func ConfigVar(key string) cli.ValueSource {
-	return &ConfigValueSource{key: key}
-}
-
-func ConfigVars(keys ...string) cli.ValueSourceChain {
-	vsc := []cli.ValueSource{}
-	for _, key := range keys {
-		vsc = append(vsc, ConfigVar(key))
-	}
-	return cli.NewValueSourceChain(vsc...)
 }

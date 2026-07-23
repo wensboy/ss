@@ -13,7 +13,7 @@ func init() {
 		panic("env - Error loading .env file for %s" + err.Error())
 	}
 	_global_env = NewEnv()
-	_global_env.SetGroup(NewEnvGroup(_default_env_prefix, _default_env_separator))
+	_global_env.AppendGroup(NewEnvGroup(_default_env_prefix, _default_env_separator))
 }
 
 var (
@@ -22,13 +22,8 @@ var (
 	_default_env_separator = "_"
 )
 
-type Env struct {
-	envGroups []EnvGroup
-	groupMap  map[string]int
-}
-
-func SetEnvGroup(eg EnvGroup) {
-	_global_env.SetGroup(eg)
+func AppendEnvGroup(eg EnvGroup) {
+	_global_env.AppendGroup(eg)
 }
 
 func GetEnvGroup(prefix string) (EnvGroup, bool) {
@@ -60,6 +55,11 @@ func MustLookupEnvFromGroup(prefix string, path ...string) string {
 	return _global_env.MustLookupFromGroup(prefix, path...)
 }
 
+type Env struct {
+	envGroups []EnvGroup
+	groupMap  map[string]int
+}
+
 func NewEnv() *Env {
 	return &Env{
 		envGroups: []EnvGroup{},
@@ -67,7 +67,7 @@ func NewEnv() *Env {
 	}
 }
 
-func (e *Env) SetGroup(eg EnvGroup) {
+func (e *Env) AppendGroup(eg EnvGroup) {
 	if _, exists := e.groupMap[eg.prefix]; !exists {
 		e.envGroups = append(e.envGroups, eg)
 		e.groupMap[eg.prefix] = len(e.envGroups) - 1
