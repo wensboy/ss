@@ -67,7 +67,6 @@ type Command struct {
 	Label       string    `json:"label"`
 	Usage       string    `json:"usage"`
 	Description string    `json:"description"`
-	Required    bool      `json:"required"`
 	Flags       []Flag    `json:"flags"`
 	Sub         []Command `json:"sub"`
 }
