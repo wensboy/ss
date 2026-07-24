@@ -4,15 +4,46 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/spf13/cast"
 	"github.com/urfave/cli/v3"
 )
 
 var (
-	command_separator = "."
-	_globalCommandMap = make(map[string]*cli.Command)
+	command_separator   = "."
+	_global_command_map map[string]*cli.Command
 )
+
+func GFlagSource(path ...string) Source {
+	return FlagSource(_global_command_map, path...)
+}
+
+func FlagSource(cmdMap map[string]*cli.Command, path ...string) Source {
+	return func() (any, bool) {
+		if len(path) == 0 {
+			return nil, false
+		}
+		if len(path) == 1 {
+			idx := strings.LastIndex(path[0], command_separator)
+			if idx == -1 {
+				return nil, false
+			}
+			path = append([]string{path[0][:idx]}, path[0][idx+1:])
+		}
+		cmdKey := strings.Join(path[:len(path)-1], command_separator)
+		flagKey := path[len(path)-1]
+		if cmd, ok := cmdMap[cmdKey]; ok {
+			for _, flag := range cmd.Flags {
+				if slices.Contains(flag.Names(), flagKey) {
+					return flag.Get(), true
+				}
+			}
+		}
+		return nil, false
+	}
+}
 
 type FlagValue struct {
 	Type    string      `json:"type"`
@@ -52,6 +83,7 @@ func SetCommandSep(sep string) {
 
 func InitCommand(path string) *cli.Command {
 	var cmdConfig CommandConfig
+	_global_command_map = make(map[string]*cli.Command)
 	fd, err := os.OpenFile(path, os.O_RDONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -66,10 +98,10 @@ func InitCommand(path string) *cli.Command {
 }
 
 func GetCommand(key string) *cli.Command {
-	if _globalCommandMap == nil {
+	if _global_command_map == nil {
 		panic("command map is nil, please call InitCommand first")
 	}
-	if cmd, ok := _globalCommandMap[key]; ok {
+	if cmd, ok := _global_command_map[key]; ok {
 		return cmd
 	}
 	return nil
@@ -90,7 +122,7 @@ func buildCommand(cmd Command, key string) *cli.Command {
 		root.Commands = append(root.Commands, buildCommand(subCmd, key+command_separator+subCmd.Label))
 	}
 
-	_globalCommandMap[key] = root
+	_global_command_map[key] = root
 	return root
 }
 

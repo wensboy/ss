@@ -16,20 +16,12 @@ func init() {
 	_global_config = NewConfig()
 	_global_config.SetDir("spec")
 	_global_config.SetSep(".")
-	err := _global_config.Load(
-		"config.json",
-		"restful.json",
-		"rpc.json",
-	)
-	if err != nil {
-		panic(err)
-	}
 }
 
 const (
-	_default_config_dir = ""
-	_default_config_sep = "."
-	_default_config_ext = "json"
+	_default_config_dir       = ""
+	_default_config_separator = "."
+	_default_config_ext       = "json"
 )
 
 var (
@@ -102,7 +94,7 @@ func NewConfig() *Config {
 	return &Config{
 		spec: make(SpecConfig),
 		dir:  _default_config_dir,
-		sep:  _default_config_sep,
+		sep:  _default_config_separator,
 	}
 }
 

@@ -3,23 +3,20 @@ package config
 import (
 	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 func init() {
-	err := godotenv.Load("spec/.env")
-	if err != nil {
-		panic("env - Error loading .env file for %s" + err.Error())
-	}
 	_global_env = NewEnv()
 	_global_env.AppendGroup(NewEnvGroup(_default_env_prefix, _default_env_separator))
 }
 
-var (
-	_global_env            *Env
-	_default_env_prefix    = ""
+const (
 	_default_env_separator = "_"
+	_default_env_prefix    = ""
+)
+
+var (
+	_global_env *Env
 )
 
 func GEnvSource(path ...string) Source {
@@ -100,6 +97,12 @@ func (e *Env) MustGetGroup(prefix string) EnvGroup {
 }
 
 func (e *Env) Lookup(path ...string) (string, bool) {
+	if len(path) == 1 {
+		path = strings.Split(path[0], _default_env_separator)
+	}
+	if len(path) == 1 {
+		path = strings.Split(path[0], _default_config_separator)
+	}
 	for _, eg := range e.envGroups {
 		if value, ok := eg.Lookup(path...); ok {
 			return value, true
