@@ -8,6 +8,10 @@ import (
 	"xorm.io/xorm"
 )
 
+const (
+	DB_TYPE_MARIADB = "mariadb"
+)
+
 type MariaDB struct {
 	name string
 	db   *xorm.Engine

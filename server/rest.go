@@ -4,8 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"example.com/s_xiewenjun/opt/config"
 	"github.com/labstack/echo/v5"
+	"github.com/wensboy/ss/config"
+	"github.com/wensboy/ss/db"
 )
 
 const (
@@ -13,16 +14,18 @@ const (
 )
 
 type RestServer struct {
-	muxer   *echo.Echo
-	server  *http.Server
-	routers map[string]*echo.Group // 仅仅用于 root router 级别中间件控制, 不适用于 sub router 记录
+	muxer    *echo.Echo
+	server   *http.Server
+	routers  map[string]*echo.Group // 用于中间件追踪挂载
+	scontext *ServerContext
 }
 
 func NewRestServer() *RestServer {
 	return &RestServer{
-		muxer:   echo.New(),
-		server:  &http.Server{},
-		routers: make(map[string]*echo.Group),
+		muxer:    echo.New(),
+		server:   &http.Server{},
+		routers:  make(map[string]*echo.Group),
+		scontext: NewServerContext(),
 	}
 }
 
@@ -111,7 +114,29 @@ func (s *RestServer) MountDatabases(preHook, runHook, postHook RestServerHook) R
 }
 
 func (s *RestServer) mountDatabases() {
-	// todo: 默认挂载数据库逻辑
+	// sql database
+	{
+		dbType := config.MustLookup[string](
+			config.GEnvSource("ss_db_type"),
+			config.GConfigSource("db.type"),
+			config.DefaultSource(db.DB_TYPE_SQLITE),
+		)
+		dbname := config.MustLookup[string](
+			config.GEnvSource("ss_db_name"),
+			config.GConfigSource("db.name"),
+			config.DefaultSource("default"),
+		)
+		dsn := config.MustLookup[string](
+			config.GEnvSource("ss_db_dsn"),
+			config.GConfigSource("db.dsn"),
+		)
+		sqlDB, err := db.NewSqlDatabase(dbType, dbname, dsn)
+		if err != nil {
+			panic(err)
+		}
+		db.GetGSqlDBContext().Set(sqlDB)
+		s.scontext.SetDBContext(db.GetGSqlDBContext())
+	}
 }
 
 func (s *RestServer) MountConfig(preHook, runHook, postHook RestServerHook) RestServerOption {

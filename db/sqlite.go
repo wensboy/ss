@@ -7,6 +7,10 @@ import (
 	"xorm.io/xorm"
 )
 
+const (
+	DB_TYPE_SQLITE = "sqlite"
+)
+
 type SqliteDB struct {
 	name string
 	db   *xorm.Engine

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"sync"
 
 	"xorm.io/xorm"
@@ -26,6 +28,17 @@ type SqlDatabase interface {
 
 func init() {
 	_global_db_context = NewSqlDBContext()
+}
+
+func NewSqlDatabase(dbname, name, dsn string, driverOptions ...func(*sql.DB) error) (SqlDatabase, error) {
+	switch dbname {
+	case DB_TYPE_SQLITE:
+		return NewSqliteDB(name, dsn, driverOptions...)
+	case DB_TYPE_MARIADB:
+		return NewMariaDB(name, dsn, driverOptions...)
+	default:
+		return nil, errors.New("unsupported database type")
+	}
 }
 
 func To[T SqlDatabase](db SqlDatabase) (T, bool) {
