@@ -7,7 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"example.com/s_xiewenjun/opt/config"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
+	"github.com/urfave/cli/v3"
 )
 
 func mockMiddleware(name string) echo.MiddlewareFunc {
@@ -22,6 +25,20 @@ func mockMiddleware(name string) echo.MiddlewareFunc {
 func MockMount(module string) RestServerHook {
 	return func(s *RestServer) {
 		fmt.Printf("mount %s\n", module)
+	}
+}
+
+func MockLoadAll() {
+	cfg := config.NewConfig().SetDir("../spec").SetExt("json")
+	cfg.Load(
+		"config",
+		"server",
+	)
+	fmt.Printf("%#v\n", cfg)
+	config.SetGlobalConfig(cfg)
+	err := godotenv.Load("../spec/.env")
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -43,7 +60,7 @@ func Test_GoStart(t *testing.T) {
 	s := NewRestServer()
 	s.MountModules(
 		s.MountDatabases(nil, mockMountDatabases, nil),
-		s.MountConfig(nil, mockMountConfig, nil),
+		s.MountConfig(nil, nil, nil),
 		s.MountMiddlewares("", mockMiddleware("auth")),
 		s.MountRouters("", mockRegisterRouter),
 	)
@@ -51,4 +68,28 @@ func Test_GoStart(t *testing.T) {
 	s.GoStart(ctx)
 	time.Sleep(20 * 1_000 * time.Millisecond) // 20s 验证 router 注册
 	cancel()
+}
+
+func Test_mountConfig(t *testing.T) {
+	MockLoadAll()
+	rootCmd := config.InitCommand("../spec/command.json")
+	serveCmd := config.GetCommand("ss.serve")
+	serveCmd.Action = func(ctx context.Context, c *cli.Command) error {
+		s := NewRestServer()
+		s.MountModules(
+			s.MountDatabases(nil, mockMountDatabases, nil),
+			s.MountConfig(nil, nil, nil),
+			s.MountMiddlewares("", mockMiddleware("auth")),
+			s.MountRouters("", mockRegisterRouter),
+		)
+		fmt.Printf("listen is %s\n", c.Value("listen"))
+		ctx, cancel := context.WithCancel(context.Background())
+		s.GoStart(ctx)
+		time.Sleep(20 * 1_000 * time.Millisecond) // 20s 验证 router 注册
+		cancel()
+		return nil
+	}
+	if err := rootCmd.Run(context.TODO(), []string{"ss", "serve"}); err != nil {
+		t.Error(err)
+	}
 }

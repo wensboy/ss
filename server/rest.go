@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"example.com/s_xiewenjun/opt/config"
 	"github.com/labstack/echo/v5"
 )
 
@@ -135,5 +136,10 @@ func (s *RestServer) MountConfig(preHook, runHook, postHook RestServerHook) Rest
 }
 
 func (s *RestServer) mountConfig() {
-	// todo: 默认挂载配置逻辑
+	s.server.Addr = config.MustLookup[string](
+		config.GFlagSource("ss.serve.listen"),
+		config.GEnvSource("ss_server_listen"),
+		config.GConfigSource("server.listen"),
+		config.DefaultSource("localhost:8080"),
+	)
 }
