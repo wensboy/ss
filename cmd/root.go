@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"example.com/s_xiewenjun/opt/config"
+	"github.com/wensboy/ss/config"
 
 	"github.com/urfave/cli/v3"
 )

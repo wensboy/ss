@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"example.com/s_xiewenjun/opt/config"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	"github.com/urfave/cli/v3"
+	"github.com/wensboy/ss/config"
 )
 
 func mockMiddleware(name string) echo.MiddlewareFunc {
