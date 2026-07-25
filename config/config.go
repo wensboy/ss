@@ -28,12 +28,19 @@ var (
 	_global_config *Config
 )
 
+func SetGlobalConfig(cfg *Config) {
+	_global_config = cfg
+}
+
 func GConfigSource(path ...string) Source {
 	return ConfigSource(_global_config, path...)
 }
 
 func ConfigSource(cfg *Config, path ...string) Source {
 	return func() (any, bool) {
+		if len(path) == 0 {
+			return nil, false
+		}
 		return cfg.Lookup(path...)
 	}
 }
@@ -98,16 +105,19 @@ func NewConfig() *Config {
 	}
 }
 
-func (c *Config) SetDir(dir string) {
+func (c *Config) SetDir(dir string) *Config {
 	c.dir = dir
+	return c
 }
 
-func (c *Config) SetSep(sep string) {
+func (c *Config) SetSep(sep string) *Config {
 	c.sep = sep
+	return c
 }
 
-func (c *Config) SetExt(ext string) {
+func (c *Config) SetExt(ext string) *Config {
 	c.ext = ext
+	return c
 }
 
 func (c *Config) Key(paths ...string) string {

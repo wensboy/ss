@@ -19,12 +19,19 @@ var (
 	_global_env *Env
 )
 
+func SetGlobalEnv(env *Env) {
+	_global_env = env
+}
+
 func GEnvSource(path ...string) Source {
 	return EnvSource(_global_env, path...)
 }
 
 func EnvSource(env *Env, path ...string) Source {
 	return func() (any, bool) {
+		if len(path) == 0 {
+			return nil, false
+		}
 		return env.Lookup(path...)
 	}
 }

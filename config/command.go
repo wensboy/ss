@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/spf13/cast"
@@ -15,6 +14,10 @@ var (
 	command_separator   = "."
 	_global_command_map map[string]*cli.Command
 )
+
+func SetGlobalCommandMap(cmdMap map[string]*cli.Command) {
+	_global_command_map = cmdMap
+}
 
 func GFlagSource(path ...string) Source {
 	return FlagSource(_global_command_map, path...)
@@ -35,10 +38,8 @@ func FlagSource(cmdMap map[string]*cli.Command, path ...string) Source {
 		cmdKey := strings.Join(path[:len(path)-1], command_separator)
 		flagKey := path[len(path)-1]
 		if cmd, ok := cmdMap[cmdKey]; ok {
-			for _, flag := range cmd.Flags {
-				if slices.Contains(flag.Names(), flagKey) {
-					return flag.Get(), true
-				}
+			if cmd.IsSet(flagKey) {
+				return cmd.Value(flagKey), true
 			}
 		}
 		return nil, false
