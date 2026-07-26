@@ -94,6 +94,34 @@ func Test_()
 ///! 1. errno, code, msg 等字段规范
 ///! 2. 封装原理和err追溯链
 ///! 3. 实践
+
+/// 1. errno, code, msg 等字段规范
+/// errno: string, 错误代号. 动态错误标识, 用于定义复杂错误或者需要链路追踪的错误.
+/// code: int, 错误代码. 静态错误标识, 用于定义业务错误.
+/// msg: string, 错误细节.
+
+// errno 满足:
+// 1. uuid
+// 2. uuid + timestamp
+Err.errno = uuid.New()
+Err.errno = uuid.New() + "-" + time.Now().Unix().String()
+
+// code 满足:
+// 1. 8 bit number: xxxxxxxx
+// 常规: 1 - wrap or not 2 - package 2 - components 3 - err code
+// 业务: 1 - wrap or not 3 - http or rpc code 2 - bussiness 2 - err code
+
+// msg 满足:
+// 1. 尽可能详细包含必要的细节
+// 2. Err 内部的追溯采用的 ->, msg 中尽可能避开使用, 避免可能的解析问题, 后续可能切换为便于解析的独立的分隔.
+
+/// 2. 封装原理和err追溯链
+
+
+
+/// 3. 实践
+
+
 ```
 
 **config**
@@ -141,56 +169,19 @@ func Test_()
 ///! 2. 实践
 
 /// 1. 日志封装原理
-/// Init(logCtx).UseXXX() (xxx.Logger, error)
-/// 核心: 保留原始日志库的使用, 统一部分配置, 实际创建初始化依赖 UseXXX() 方法
+/// InitMutateLogger(logCtxOptions).[New/Use]XXX() (xxx.Logger, error)
+/// 核心: 保留原始日志库的使用方式, 统一封装配置过程, 实际创建初始化依赖 UseXXX() 和 NewXXX() 方法
 
 /// 2. 实践
 /// 如下为一个使用示例
-const (
-    lv_info int iota = 1
-    lv_warn
-    lv_error
-    lv_panic
-    lv_fatal
-)
-
-type MutateLogger struct {
-    lcontext *LogContext
-}
-
-func (ml *MutateLogger) UseZap() *zap.Logger {
-    logger, _ := zap.NewExample()
-    defer logger.Sync()
-    return logger
-}
-
-type LogContext struct {
-    level int
-}
-
-type LogOption func(*LogContext)
-
-func WithLevel(lv int) LogOption {
-    return func(ctx *LogContext) {
-        ctx.level = lv
-    }
-}
-
-func Init(opts ...LogOption) MutateLogger {
-    mLogger := MutateLogger{
-        lcontext: new(LogContext)
-    }
-    for _,opt := range opts {
-        opt(mLogger.lcontext)
-    }
-    return mLogger
-}
-
-// main.go
+/// main.go
 func main() {
-    logger := Init(WithLevel(lv_warn)).UseZap()
+    logger,err = log.InitMutateLogger(...With_(...)).UseZap()
+    if err!=nil {
+        panic(err)
+    }
     defer logger.Sync()
-    logger.Info("this is example for zap logger usage.")
+    // 后续按照 zap 日志库的方法使用...
 }
 
 ```
