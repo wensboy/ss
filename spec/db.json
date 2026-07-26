@@ -1,0 +1,5 @@
+{
+    "type": "mariadb",
+    "name": "test",
+    "dsn": "root:root123@tcp(127.0.0.1:3306)/dev?loc=Local&parseTime=true&charset=utf8mb4&timeout=8s"
+}

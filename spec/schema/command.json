@@ -1,0 +1,32 @@
+{
+    "version": "",
+    "entry": {
+        "name": "",
+        "label": "",
+        "usage": "",
+        "description": "",
+        "flags": [
+            {
+                "name": "",
+                "usage": "",
+                "description": "",
+                "local": false,
+                "required": false,
+                "value": {
+                    "type": "",
+                    "default": "ref type",
+                    "env": [
+                        ""
+                    ],
+                    "config": [
+                        ""
+                    ]
+                },
+                "short": ""
+            }
+        ],
+        "sub": [
+            {}
+        ]
+    }
+}

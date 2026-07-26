@@ -1,0 +1,75 @@
+{
+    "version": "0.1.0",
+    "entry": {
+        "name": "ss",
+        "label": "ss",
+        "usage": "opt [command] [options]",
+        "description": "ss command tool for ss lib",
+        "flags": [],
+        "sub": [
+            {
+                "name": "serve",
+                "label": "serve",
+                "usage": "ss serve ...",
+                "description": "start server",
+                "flags": [
+                    {
+                        "name": "listen",
+                        "usage": "--listen [<ip>]:<port>",
+                        "description": "Service listening address",
+                        "local": true,
+                        "required": false,
+                        "value": {
+                            "type": "string"
+                        },
+                        "short": "l"
+                    },
+                    {
+                        "name": "server",
+                        "usage": "--server [rest | rpc]",
+                        "description": "Specify the type of service to start",
+                        "local": true,
+                        "required": false,
+                        "value": {
+                            "type": "string",
+                            "default": "rest",
+                            "env": [
+                                "SS_SERVER_TYPE"
+                            ],
+                            "config": [
+                                "server.type"
+                            ]
+                        },
+                        "short": "t"
+                    }
+                ]
+            },
+            {
+                "name": "log",
+                "label": "log",
+                "usage": "ss log ...",
+                "description": "Log-related operations",
+                "flags": [
+                    {
+                        "name": "level",
+                        "usage": "--level <debug | info | warn | error | ...>",
+                        "description": "Set the minimum log display level",
+                        "local": true,
+                        "required": false,
+                        "value": {
+                            "type": "string",
+                            "default": "debug",
+                            "env": [
+                                "SS_LOG_LEVEL"
+                            ],
+                            "config": [
+                                "log.level"
+                            ]
+                        },
+                        "short": "l"
+                    }
+                ]
+            }
+        ]
+    }
+}
