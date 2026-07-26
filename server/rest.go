@@ -163,8 +163,8 @@ func (s *RestServer) MountConfig(preHook, runHook, postHook RestServerHook) Rest
 func (s *RestServer) mountConfig() {
 	s.server.Addr = config.MustLookup[string](
 		config.GFlagSource("ss.serve.listen"),
-		config.GEnvSource("ss_server_listen"),
-		config.GConfigSource("server.listen"),
+		config.GEnvSource("ss_server_rest_listen"),
+		config.GConfigSource("server.rest.listen"),
 		config.DefaultSource("localhost:8080"),
 	)
 }

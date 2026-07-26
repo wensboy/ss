@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"strings"
 
@@ -127,62 +126,81 @@ func buildCommand(cmd Command, key string) *cli.Command {
 }
 
 func buildFlag(flag Flag) cli.Flag {
+	var rflag cli.Flag
 	vsc := cli.NewValueSourceChain()
 	vsc.Append(cli.EnvVars(flag.Value.Env...))
 	vsc.Append(ConfigVars(flag.Value.Config...))
 	switch flag.Value.Type {
 	case "string":
-		return &cli.StringFlag{
+		rflag = &cli.StringFlag{
 			Name:     flag.Name,
 			Usage:    flag.Usage,
 			Local:    flag.Local,
 			Required: flag.Required,
-			Value:    cast.Must[string](cast.ToE[string](flag.Value.Default)),
 			Aliases:  []string{flag.Short},
 			Sources:  vsc,
 		}
 	case "int":
-		return &cli.IntFlag{
+		rflag = &cli.IntFlag{
 			Name:     flag.Name,
 			Usage:    flag.Usage,
 			Local:    flag.Local,
 			Required: flag.Required,
-			Value:    cast.Must[int](cast.ToE[int](flag.Value.Default)),
 			Aliases:  []string{flag.Short},
 			Sources:  vsc,
 		}
 	case "uint":
-		return &cli.UintFlag{
+		rflag = &cli.UintFlag{
 			Name:     flag.Name,
 			Usage:    flag.Usage,
 			Local:    flag.Local,
 			Required: flag.Required,
-			Value:    cast.Must[uint](cast.ToE[uint](flag.Value.Default)),
 			Aliases:  []string{flag.Short},
 			Sources:  vsc,
 		}
 	case "bool":
-		return &cli.BoolFlag{
+		rflag = &cli.BoolFlag{
 			Name:     flag.Name,
 			Usage:    flag.Usage,
 			Local:    flag.Local,
 			Required: flag.Required,
-			Value:    cast.Must[bool](cast.ToE[bool](flag.Value.Default)),
 			Aliases:  []string{flag.Short},
 			Sources:  vsc,
 		}
-	case "float64":
-		return &cli.Float64Flag{
+	case "float":
+		rflag = &cli.FloatFlag{
 			Name:     flag.Name,
 			Usage:    flag.Usage,
 			Local:    flag.Local,
 			Required: flag.Required,
-			Value:    cast.Must[float64](cast.ToE[float64](flag.Value.Default)),
 			Aliases:  []string{flag.Short},
 			Sources:  vsc,
 		}
 	default:
-		log.Fatalf("unmatch type flag...\n")
-		return nil
+		panic("unmatch type flag...\n")
+	}
+	setFlagValue(rflag, flag.Value.Type, flag.Value.Default)
+	return rflag
+}
+
+func setFlagValue(flag cli.Flag, t string, value any) {
+	if value == nil {
+		return
+	}
+	switch t {
+	case "string":
+		strFlag, _ := flag.(*cli.StringFlag)
+		strFlag.Value = cast.Must[string](cast.ToE[string](value))
+	case "int":
+		intFlag, _ := flag.(*cli.IntFlag)
+		intFlag.Value = cast.Must[int](cast.ToE[int](value))
+	case "uint":
+		uintFlag, _ := flag.(*cli.UintFlag)
+		uintFlag.Value = cast.Must[uint](cast.ToE[uint](value))
+	case "float":
+		floatFlag, _ := flag.(*cli.FloatFlag)
+		floatFlag.Value = cast.Must[float64](cast.ToE[float64](value))
+	default:
+		panic("unmatch type flag...\n")
 	}
 }

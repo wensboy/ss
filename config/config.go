@@ -84,7 +84,7 @@ func (sc SpecConfig) MustLookup(path ...string) any {
 	if v, ok := sc.Lookup(path...); ok {
 		return v
 	}
-	panic("config - entry not found")
+	panic(fmt.Sprintf("config - entry(%s) not found", strings.Join(path, _default_config_separator)))
 }
 
 type Config struct {
@@ -170,7 +170,7 @@ func (c *Config) MustLookup(path ...string) any {
 	if v, ok := c.Lookup(path...); ok {
 		return v
 	}
-	panic("config - entry not found")
+	panic(fmt.Sprintf("config - entry(%s) not found", strings.Join(path, _default_config_separator)))
 }
 
 type ConfigValueSource struct {

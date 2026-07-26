@@ -33,6 +33,7 @@ func MockLoadAll() {
 	cfg.Load(
 		"config",
 		"server",
+		"db",
 	)
 	fmt.Printf("%#v\n", cfg)
 	config.SetGlobalConfig(cfg)
@@ -70,7 +71,7 @@ func Test_GoStart(t *testing.T) {
 	cancel()
 }
 
-func Test_mountConfig(t *testing.T) {
+func Test_MountConfig(t *testing.T) {
 	MockLoadAll()
 	rootCmd := config.InitCommand("../spec/command.json")
 	serveCmd := config.GetCommand("ss.serve")
@@ -82,7 +83,6 @@ func Test_mountConfig(t *testing.T) {
 			s.MountMiddlewares("", mockMiddleware("auth")),
 			s.MountRouters("", mockRegisterRouter),
 		)
-		fmt.Printf("listen is %s\n", c.Value("listen"))
 		ctx, cancel := context.WithCancel(context.Background())
 		s.GoStart(ctx)
 		time.Sleep(20 * 1_000 * time.Millisecond) // 20s 验证 router 注册
