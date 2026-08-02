@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/wensboy/ss/config"
@@ -123,6 +124,7 @@ func (s *RpcServer) mountConfig() {
 		config.DefaultSource("localhost:50051"),
 	)
 	var err error
+	fmt.Printf("network: %s listen: %s\n", lisNetwork, lisAddr)
 	s.lis, err = net.Listen(lisNetwork, lisAddr)
 	if err != nil {
 		panic(err)
