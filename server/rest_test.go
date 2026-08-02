@@ -49,7 +49,7 @@ var (
 		s.server.Addr = ":18080"
 	}
 	mockMountDatabases = MockMount("databases")
-	mockRegisterRouter = func(g *echo.Group) {
+	mockRegisterRouter = func(g *echo.Group, _ *ServerContext) {
 		poblicGroup := g.Group("/public")
 		poblicGroup.GET("/ping", func(c *echo.Context) error {
 			return c.String(http.StatusOK, "pong")

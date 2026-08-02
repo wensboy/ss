@@ -4,6 +4,7 @@
         "listen": "localhost:8080"
     },
     "rpc": {
+        "network": "tcp",
         "listen": "localhost:50021"
     }
 }

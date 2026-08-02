@@ -6,7 +6,6 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/wensboy/ss/config"
-	"github.com/wensboy/ss/db"
 )
 
 const (
@@ -17,7 +16,7 @@ type RestServer struct {
 	muxer    *echo.Echo
 	server   *http.Server
 	routers  map[string]*echo.Group // 用于中间件追踪挂载
-	scontext *ServerContext
+	Scontext *ServerContext
 }
 
 func NewRestServer() *RestServer {
@@ -25,7 +24,7 @@ func NewRestServer() *RestServer {
 		muxer:    echo.New(),
 		server:   &http.Server{},
 		routers:  make(map[string]*echo.Group),
-		scontext: NewServerContext(),
+		Scontext: NewServerContext(),
 	}
 }
 
@@ -33,6 +32,8 @@ type RestServerOption func(*RestServer)
 type RestServerHook = RestServerOption
 
 func (s *RestServer) Start() {
+	// 确保执行过程中一定有 server
+	s.server.Handler = s.muxer
 	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
@@ -72,20 +73,20 @@ func (s *RestServer) MountModules(opts ...RestServerHook) {
 	}
 }
 
-func (s *RestServer) MountRouters(prefix string, registers ...func(*echo.Group)) RestServerOption {
+func (s *RestServer) MountRouters(prefix string, routers ...func(*echo.Group, *ServerContext)) RestServerOption {
 	if s.routers[prefix] == nil {
 		s.routers[prefix] = s.muxer.Group(prefix)
 	}
 	return func(s *RestServer) {
-		for _, register := range registers {
-			register(s.routers[prefix])
+		for _, router := range routers {
+			router(s.routers[prefix], s.Scontext)
 		}
 	}
 }
 
 // 总是在 router 之前挂载中间件
 func (s *RestServer) MountMiddlewares(prefix string, middlewares ...echo.MiddlewareFunc) RestServerOption {
-	if s.routers[prefix] == nil {
+	if prefix != GLOBAL_MIDDLEWARE && s.routers[prefix] == nil {
 		s.routers[prefix] = s.muxer.Group(prefix)
 	}
 	return func(s *RestServer) {
@@ -105,7 +106,7 @@ func (s *RestServer) MountDatabases(preHook, runHook, postHook RestServerHook) R
 		if runHook != nil {
 			runHook(s)
 		} else {
-			s.mountDatabases()
+			s.Scontext.MountDBContext()
 		}
 		if postHook != nil {
 			postHook(s)
@@ -113,38 +114,7 @@ func (s *RestServer) MountDatabases(preHook, runHook, postHook RestServerHook) R
 	}
 }
 
-func (s *RestServer) mountDatabases() {
-	// sql database
-	{
-		dbType := config.MustLookup[string](
-			config.GEnvSource("ss_db_type"),
-			config.GConfigSource("db.type"),
-			config.DefaultSource(db.DB_TYPE_SQLITE),
-		)
-		dbname := config.MustLookup[string](
-			config.GEnvSource("ss_db_name"),
-			config.GConfigSource("db.name"),
-			config.DefaultSource("default"),
-		)
-		dsn := config.MustLookup[string](
-			config.GEnvSource("ss_db_dsn"),
-			config.GConfigSource("db.dsn"),
-		)
-		sqlDB, err := db.NewSqlDatabase(dbType, dbname, dsn)
-		if err != nil {
-			panic(err)
-		}
-		db.GetGSqlDBContext().Set(sqlDB)
-		s.scontext.SetDBContext(db.GetGSqlDBContext())
-	}
-}
-
 func (s *RestServer) MountConfig(preHook, runHook, postHook RestServerHook) RestServerOption {
-	if s.server == nil || s.muxer == nil {
-		// todo: 创建带编码错误 Err
-		panic("[server] server or muxer is nil")
-	}
-	s.server.Handler = s.muxer
 	return func(s *RestServer) {
 		if preHook != nil {
 			preHook(s)
