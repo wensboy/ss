@@ -8,6 +8,7 @@ ss(so simple) 规约定义了该项目始终应当遵循的设计原则. ss 没�
 
 ```go
 ///! 包: 命名直观即可, 通常属于一个独立的 domain, mod 内唯一.
+///! 1. 顺序和最终的 err.package 定义的包编码一致.
 
 // package.config - 配置相关
 package config
@@ -28,7 +29,7 @@ package service
 > 接口
 
 ```go
-///! 接口: [<Prefix>]<Action>[<Object>]([args...]) [returns] {}
+///! 接口: [<Prefix>]<Action>[<Object>][Suffix]([args...]) [returns] {}
 ///! 通常情况下 Prefix 一般省略, 以下主要集中在 Action 和 Object 的规约.
 ///! 借口规约只对对应的语义处理需要遵循, 自定义 Action 完全可以, 如果一个 Actioin 能够具备较好的语义, 需要记录到这里.
 
@@ -76,6 +77,14 @@ func L_()
 func To_()
 // Prefix.Is - 断言
 func Is_()
+// Prefix.With - 选项函数
+func With_()
+// Suffix.Option - 选项函数声明, 简单配置
+type _Option func(...)
+// Suffix.Fn - 行为函数, 复杂配置
+func _Fn()
+// Suffix.Hook - 钩子函数
+func _Hook()
 ```
 
 > 测试
