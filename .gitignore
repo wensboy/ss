@@ -4,10 +4,12 @@
 .vscode/
 spec/
 /docs/
+/proto/
 
 *.sh
 *.md
 *.http
+*.proto
 
 !readme.md
 !README.md

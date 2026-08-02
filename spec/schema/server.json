@@ -4,6 +4,7 @@
         "listen": ""
     },
     "rpc": {
+        "network": "",
         "listen": ""
     }
 }
