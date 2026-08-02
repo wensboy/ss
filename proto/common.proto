@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package common;
+
+option go_package = "github.com/wensboy/foc/proto/common";
+
+message PingReq {
+    string msg = 1;
+}
+
+message PingResp {
+    string msg = 1;
+}
+
+service CommonService {
+    rpc Ping(PingReq) returns (PingResp);
+}
+

@@ -16,3 +16,5 @@ spec/
 !spec/
 !docs/
 !spec.md
+!/proto/
+!common.proto
