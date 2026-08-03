@@ -14,11 +14,28 @@ const (
 	LogEnvDevelopment
 	LogEnvExample
 	LogEnvProduction
+
+	_default_log_level = LevelDebug
+	_default_log_env   = LogEnvDebug
 )
 
 var (
 	_global_logger *MutateLogger
 )
+
+func GetGMutateLogger() *MutateLogger {
+	if _global_logger == nil {
+		_global_logger = NewMutateLogger(
+			WithLogLevel(_default_log_level),
+			WithLogEnv(_default_log_env),
+		)
+	}
+	return _global_logger
+}
+
+func SetGMutateLogger(logger *MutateLogger) {
+	_global_logger = logger
+}
 
 type Level uint8
 type LogEnv uint8
@@ -47,13 +64,18 @@ type MutateLogger struct {
 	zapAdapter *zapAdapter
 }
 
-func InitMutateLogger(opts ...LogContextOption) *MutateLogger {
+func NewMutateLogger(opts ...LogContextOption) *MutateLogger {
 	mLogger := &MutateLogger{
 		lcontext: &LogContext{},
 	}
 	for _, opt := range opts {
 		opt(mLogger.lcontext)
 	}
+	return mLogger
+}
+
+func InitMutateLogger(opts ...LogContextOption) *MutateLogger {
+	mLogger := NewMutateLogger(opts...)
 	_global_logger = mLogger
 	return mLogger
 }

@@ -2,11 +2,11 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/wensboy/ss/config"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type RpcServer struct {
@@ -49,6 +49,11 @@ func (s *RpcServer) SetListener(lis net.Listener) *RpcServer {
 
 func (s *RpcServer) SetServer(server *grpc.Server) *RpcServer {
 	s.server = server
+	return s
+}
+
+func (s *RpcServer) SetServerContext(scontext *ServerContext) *RpcServer {
+	s.Scontext = scontext
 	return s
 }
 
@@ -112,6 +117,15 @@ func (s *RpcServer) MountConfig(preHook, runHook, postHook RpcServerHook) RpcSer
 }
 
 func (s *RpcServer) mountConfig() {
+	enableReflection := config.MustLookup[bool](
+		config.GEnvSource("ss_server_rpc_reflection"),
+		config.GConfigSource("server.rpc.reflection"),
+		config.DefaultSource(false),
+	)
+	if enableReflection {
+		// 用于 grpcurl 等工具调试
+		reflection.Register(s.server)
+	}
 	lisNetwork := config.MustLookup[string](
 		config.GEnvSource("ss_server_rpc_network"),
 		config.GConfigSource("server.rpc.network"),
@@ -124,7 +138,6 @@ func (s *RpcServer) mountConfig() {
 		config.DefaultSource("localhost:50051"),
 	)
 	var err error
-	fmt.Printf("network: %s listen: %s\n", lisNetwork, lisAddr)
 	s.lis, err = net.Listen(lisNetwork, lisAddr)
 	if err != nil {
 		panic(err)

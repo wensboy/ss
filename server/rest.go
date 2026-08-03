@@ -67,6 +67,11 @@ func (s *RestServer) SetServer(server *http.Server) *RestServer {
 	return s
 }
 
+func (s *RestServer) SetServerContext(scontext *ServerContext) *RestServer {
+	s.Scontext = scontext
+	return s
+}
+
 func (s *RestServer) MountModules(opts ...RestServerHook) {
 	for _, opt := range opts {
 		opt(s)

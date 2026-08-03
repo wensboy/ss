@@ -26,6 +26,10 @@ func init() {
 	_global_errhub = NewErrHub()
 }
 
+func GetGErrHub() *ErrHub {
+	return _global_errhub
+}
+
 func Tracing(err error, target error) bool {
 	return errors.Is(err, target)
 }
