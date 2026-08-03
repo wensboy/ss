@@ -5,6 +5,11 @@
     },
     "rpc": {
         "network": "tcp",
-        "listen": "localhost:50021"
+        "listen": "localhost:50021",
+        "reflection": false
+    },
+    "log": {
+        "level": "info",
+        "env": "development"
     }
 }

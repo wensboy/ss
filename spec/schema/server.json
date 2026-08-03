@@ -5,6 +5,11 @@
     },
     "rpc": {
         "network": "",
-        "listen": ""
+        "listen": "",
+        "reflection": false
+    },
+    "log": {
+        "level": "",
+        "env": ""
     }
 }
