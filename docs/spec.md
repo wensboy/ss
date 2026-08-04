@@ -22,8 +22,6 @@ package server
 package log
 // package.db - 数据库相关
 package db
-// package.service - 服务相关
-package service
 ```
 
 > 接口
