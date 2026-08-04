@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"strings"
+
+	"github.com/wensboy/ss/err"
 )
 
 func init() {
@@ -98,7 +100,7 @@ func (e *Env) GetGroup(prefix string) (EnvGroup, bool) {
 func (e *Env) MustGetGroup(prefix string) EnvGroup {
 	eg, ok := e.GetGroup(prefix)
 	if !ok {
-		panic("env - environment group not found: " + prefix)
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeEnvGroupNotFound), err.NewErr("", err.NewNormalErrCode(ErrCodeEnvGroupNotFound).Code(), "environment group(%s) not found", prefix)))
 	}
 	return eg
 }
@@ -121,7 +123,7 @@ func (e *Env) Lookup(path ...string) (string, bool) {
 func (e *Env) MustLookup(path ...string) string {
 	value, ok := e.Lookup(path...)
 	if !ok {
-		panic("env - environment variable not found: " + strings.Join(path, "."))
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeEnvVarNotFound), err.NewErr("", err.NewNormalErrCode(ErrCodeEnvVarNotFound).Code(), "environment variable(%s) not found", strings.Join(path, _default_env_separator))))
 	}
 	return value
 }
@@ -168,7 +170,7 @@ func (e *EnvGroup) Lookup(path ...string) (string, bool) {
 func (e *EnvGroup) MustLookup(path ...string) string {
 	value, ok := e.Lookup(path...)
 	if !ok {
-		panic("env - environment variable not found: " + e.Key(path...))
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeEnvVarNotFound), err.NewErr("", err.NewNormalErrCode(ErrCodeEnvVarNotFound).Code(), "environment variable(%s) not found", e.Key(path...))))
 	}
 	return value
 }

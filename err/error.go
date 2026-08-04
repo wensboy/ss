@@ -11,11 +11,11 @@ const (
 	Unwrap = 0
 
 	PackageConfig = iota + 1
-	PackageServer
-	PackageDB
-	PackageLog
-	PackageErr
 	PackageCmd
+	PackageErr
+	PackageServer
+	PackageLog
+	PackageDB
 )
 
 var (
@@ -60,13 +60,9 @@ func (e Err) Error() string {
 	return fmt.Sprintf("%s -> %s", str, e.err.Error())
 }
 
-func (e Err) Wrap(err error) Err {
-	return Err{
-		Errno: e.Errno,
-		Code:  e.Code,
-		Msg:   e.Msg,
-		err:   err,
-	}
+func (e *Err) Wrap(err error) *Err {
+	e.err = err
+	return e
 }
 
 func (e Err) Unwrap() error {

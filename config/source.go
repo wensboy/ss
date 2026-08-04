@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/spf13/cast"
+	"github.com/wensboy/ss/err"
 )
 
 type Source func() (any, bool)
@@ -30,5 +31,5 @@ func MustLookup[T cast.Basic](ss ...Source) T {
 	if found {
 		return v
 	}
-	panic("config - not found source or invalid source")
+	panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeSourceNotFound), err.NewErr("", err.NewNormalErrCode(ErrCodeSourceNotFound).Code(), "source not found")))
 }

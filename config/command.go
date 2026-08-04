@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cast"
 	"github.com/urfave/cli/v3"
+	"github.com/wensboy/ss/err"
 )
 
 var (
@@ -83,14 +84,14 @@ func SetCommandSep(sep string) {
 func InitCommand(path string) *cli.Command {
 	var cmdConfig CommandConfig
 	_global_command_map = make(map[string]*cli.Command)
-	fd, err := os.OpenFile(path, os.O_RDONLY, 0644)
-	if err != nil {
-		panic(err)
+	fd, perr := os.OpenFile(path, os.O_RDONLY, 0644)
+	if perr != nil {
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeCommandInvalidPath), err.NewErr("", err.NewNormalErrCode(ErrCodeCommandInvalidPath).Code(), "open command config file(%s) failed", path).Wrap(perr)))
 	}
 	defer fd.Close()
 
-	if err := json.NewDecoder(fd).Decode(&cmdConfig); err != nil {
-		panic(err)
+	if perr := json.NewDecoder(fd).Decode(&cmdConfig); perr != nil {
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeCommandParseFailed), err.NewErr("", err.NewNormalErrCode(ErrCodeCommandParseFailed).Code(), "parse command config file(%s) failed", path).Wrap(perr)))
 	}
 
 	return buildCommand(cmdConfig.Entry, cmdConfig.Entry.Label)
@@ -98,7 +99,7 @@ func InitCommand(path string) *cli.Command {
 
 func GetCommand(key string) *cli.Command {
 	if _global_command_map == nil {
-		panic("command map is nil, please call InitCommand first")
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeCommandMapIsNil), err.NewErr("", err.NewNormalErrCode(ErrCodeCommandMapIsNil).Code(), "command map is nil, please call InitCommand first")))
 	}
 	if cmd, ok := _global_command_map[key]; ok {
 		return cmd
@@ -177,7 +178,7 @@ func buildFlag(flag Flag) cli.Flag {
 			Sources:  vsc,
 		}
 	default:
-		panic("unmatch type flag...\n")
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeCommandUnmatchedFlag), err.NewErr("", err.NewNormalErrCode(ErrCodeCommandUnmatchedFlag).Code(), "unmatch type(%s) flag", flag.Value.Type)))
 	}
 	setFlagValue(rflag, flag.Value.Type, flag.Value.Default)
 	return rflag
@@ -201,6 +202,6 @@ func setFlagValue(flag cli.Flag, t string, value any) {
 		floatFlag, _ := flag.(*cli.FloatFlag)
 		floatFlag.Value = cast.Must[float64](cast.ToE[float64](value))
 	default:
-		panic("unmatch type flag...\n")
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeCommandUnmatchedFlag), err.NewErr("", err.NewNormalErrCode(ErrCodeCommandUnmatchedFlag).Code(), "unmatch type(%s) flag", t)))
 	}
 }

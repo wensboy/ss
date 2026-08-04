@@ -9,14 +9,9 @@ import (
 	"sync"
 
 	"github.com/urfave/cli/v3"
+	"github.com/wensboy/ss/err"
 	"golang.org/x/sync/errgroup"
 )
-
-func init() {
-	_global_config = NewConfig()
-	_global_config.SetDir("spec")
-	_global_config.SetSep(".")
-}
 
 const (
 	_default_config_dir       = ""
@@ -26,6 +21,15 @@ const (
 
 var (
 	_global_config *Config
+
+	ErrCodeConfigEntryNotFound  = [4]int{err.Wrap, err.PackageConfig, 1, 1}
+	ErrCodeEnvGroupNotFound     = [4]int{err.Wrap, err.PackageConfig, 2, 1}
+	ErrCodeEnvVarNotFound       = [4]int{err.Wrap, err.PackageConfig, 2, 2}
+	ErrCodeCommandInvalidPath   = [4]int{err.Wrap, err.PackageConfig, 3, 1}
+	ErrCodeCommandParseFailed   = [4]int{err.Wrap, err.PackageConfig, 3, 2}
+	ErrCodeCommandMapIsNil      = [4]int{err.Wrap, err.PackageConfig, 3, 3}
+	ErrCodeCommandUnmatchedFlag = [4]int{err.Wrap, err.PackageConfig, 3, 4}
+	ErrCodeSourceNotFound       = [4]int{err.Wrap, err.PackageConfig, 4, 1}
 )
 
 func SetGlobalConfig(cfg *Config) {
@@ -84,7 +88,7 @@ func (sc SpecConfig) MustLookup(path ...string) any {
 	if v, ok := sc.Lookup(path...); ok {
 		return v
 	}
-	panic(fmt.Sprintf("config - entry(%s) not found", strings.Join(path, _default_config_separator)))
+	panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeConfigEntryNotFound), err.NewErr("", err.NewNormalErrCode(ErrCodeConfigEntryNotFound).Code(), "config entry(%s) not found", strings.Join(path, _default_config_separator))))
 }
 
 type Config struct {
@@ -170,7 +174,7 @@ func (c *Config) MustLookup(path ...string) any {
 	if v, ok := c.Lookup(path...); ok {
 		return v
 	}
-	panic(fmt.Sprintf("config - entry(%s) not found", strings.Join(path, _default_config_separator)))
+	panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeConfigEntryNotFound), err.NewErr("", err.NewNormalErrCode(ErrCodeConfigEntryNotFound).Code(), "config entry(%s) not found", strings.Join(path, _default_config_separator))))
 }
 
 type ConfigValueSource struct {
