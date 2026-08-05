@@ -6,6 +6,14 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/wensboy/ss/err"
+)
+
+var (
+	ErrCodeStartFail      = [4]int{err.Wrap, err.PackageServer, 1, 1}
+	ErrCodeStopFail       = [4]int{err.Wrap, err.PackageServer, 1, 2}
+	ErrCodeRequiredOption = [4]int{err.Wrap, err.PackageServer, 1, 3}
 )
 
 type Server interface {

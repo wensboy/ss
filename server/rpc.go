@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/wensboy/ss/config"
+	"github.com/wensboy/ss/err"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -23,8 +24,8 @@ func NewRpcServer() *RpcServer {
 }
 
 func (s *RpcServer) Start() {
-	if err := s.server.Serve(s.lis); err != nil {
-		panic(err)
+	if perr := s.server.Serve(s.lis); perr != nil {
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeStartFail), err.NewErr("", err.NewNormalErrCode(ErrCodeStartFail).Code(), "rpc server start failed").Wrap(perr)))
 	}
 }
 
@@ -38,7 +39,7 @@ func (s *RpcServer) GoStart(ctx context.Context) {
 	}()
 	go func() {
 		<-ctx.Done()
-		s.server.GracefulStop()
+		s.Stop()
 	}()
 }
 
@@ -137,9 +138,9 @@ func (s *RpcServer) mountConfig() {
 		config.GConfigSource("server.rpc.listen"),
 		config.DefaultSource("localhost:50051"),
 	)
-	var err error
-	s.lis, err = net.Listen(lisNetwork, lisAddr)
-	if err != nil {
-		panic(err)
+	var perr error
+	s.lis, perr = net.Listen(lisNetwork, lisAddr)
+	if perr != nil {
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeRequiredOption), err.NewErr("", err.NewNormalErrCode(ErrCodeRequiredOption).Code(), "listener is required").Wrap(perr)))
 	}
 }

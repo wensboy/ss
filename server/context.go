@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/wensboy/ss/config"
 	"github.com/wensboy/ss/db"
+	"github.com/wensboy/ss/err"
 	"github.com/wensboy/ss/log"
 )
 
@@ -38,9 +39,9 @@ func (s *ServerContext) MountDBContext() {
 			config.GEnvSource("ss_db_dsn"),
 			config.GConfigSource("db.dsn"),
 		)
-		sqlDB, err := db.NewSqlDatabase(dbType, dbname, dsn)
-		if err != nil {
-			panic(err)
+		sqlDB, perr := db.NewSqlDatabase(dbType, dbname, dsn)
+		if perr != nil {
+			panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeRequiredOption), err.NewErr("", err.NewNormalErrCode(ErrCodeRequiredOption).Code(), "database init failed").Wrap(perr)))
 		}
 		db.GetGSqlDBContext().Set(sqlDB)
 		s.SetDBContext(db.GetGSqlDBContext())

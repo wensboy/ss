@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/wensboy/ss/config"
+	"github.com/wensboy/ss/err"
 )
 
 const (
@@ -34,14 +35,14 @@ type RestServerHook = RestServerOption
 func (s *RestServer) Start() {
 	// 确保执行过程中一定有 server
 	s.server.Handler = s.muxer
-	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		panic(err)
+	if perr := s.server.ListenAndServe(); perr != nil && perr != http.ErrServerClosed {
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeStartFail), err.NewErr("", err.NewNormalErrCode(ErrCodeStartFail).Code(), "server start failed").Wrap(perr)))
 	}
 }
 
 func (s *RestServer) Stop() {
-	if err := s.server.Shutdown(context.Background()); err != nil {
-		panic(err)
+	if perr := s.server.Shutdown(context.Background()); perr != nil {
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeStopFail), err.NewErr("", err.NewNormalErrCode(ErrCodeStopFail).Code(), "server stop failed").Wrap(perr)))
 	}
 }
 
@@ -51,9 +52,7 @@ func (s *RestServer) GoStart(ctx context.Context) {
 	}()
 	go func() {
 		<-ctx.Done()
-		if err := s.server.Shutdown(context.Background()); err != nil {
-			panic(err)
-		}
+		s.Stop()
 	}()
 }
 

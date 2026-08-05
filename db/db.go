@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/wensboy/ss/err"
 	"xorm.io/xorm"
 )
 
@@ -14,6 +15,9 @@ const (
 
 var (
 	_global_db_context *SqlDBContext
+
+	ErrCodeUnmatchedType = [4]int{err.Unwrap, err.PackageDB, 1, 1}
+	ErrCodeDBNotFound    = [4]int{err.Unwrap, err.PackageDB, 1, 2}
 )
 
 type SqlTable interface {
@@ -59,7 +63,7 @@ func To[T SqlDatabase](db SqlDatabase) (T, bool) {
 func MustTo[T SqlDatabase](db SqlDatabase) T {
 	t, ok := To[T](db)
 	if !ok {
-		panic("db type assertion failed")
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeUnmatchedType), err.NewErr("", err.NewNormalErrCode(ErrCodeUnmatchedType).Code(), "unmatched db type")))
 	}
 	return t
 }
@@ -104,7 +108,7 @@ func (c *SqlDBContext) Get(dbname, name string) (SqlDatabase, bool) {
 func (c *SqlDBContext) MustGet(dbname, name string) SqlDatabase {
 	db, ok := c.Get(dbname, name)
 	if !ok {
-		panic("db not found: " + dbname + c.sep + name)
+		panic(err.GetGErrHub().GetOrSet(err.NewNormalErrCode(ErrCodeDBNotFound), err.NewErr("", err.NewNormalErrCode(ErrCodeDBNotFound).Code(), "db(%s) not found", dbname+c.sep+name)))
 	}
 	return db
 }
