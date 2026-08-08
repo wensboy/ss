@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/wensboy/ss/config"
@@ -13,16 +12,15 @@ import (
 func Execute() {
 	rootCmd := config.InitCommand("spec/command.json")
 
-	mountRoot(rootCmd)
+	mountCmd(rootCmd)
 
 	if err := rootCmd.Run(context.Background(), os.Args); err != nil {
 		panic(err)
 	}
 }
 
-func mountRoot(root *cli.Command) {
-	root.Action = func(c context.Context, cmd *cli.Command) error {
-		fmt.Fprintf(os.Stderr, "nothing to do~\n")
-		return nil
+func mountCmd(cmd *cli.Command) {
+	cmd.Action = func(c context.Context, cliCmd *cli.Command) error {
+		return cli.Exit("type 'ss help' for more information\n", 1)
 	}
 }
